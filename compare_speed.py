@@ -2,7 +2,7 @@ import torch
 import models
 from time import time
 
-img = torch.randn(1, 3, 256, 256)
+img = torch.randn(1, 3, 256, 256,requires_grad=True)
 net = models.MobileViT_S()
 img = img.cuda()
 net = net.cuda()
