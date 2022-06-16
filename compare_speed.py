@@ -8,7 +8,7 @@ import tensorrt as trt
 
 def distance(a,b):
     l2_distance = np.linalg.norm(a-b)
-    cos_distance = 1-np.dot(a,b.T).squeeze(0).squeeze(0)/(np.linalg.norm(a)*(np.linalg.norm(b)))
+    cos_distance = 1-np.abs(np.dot(a,b.T).squeeze(0).squeeze(0)/(np.linalg.norm(a)*(np.linalg.norm(b))))
     return [l2_distance,cos_distance]
 
 
