@@ -56,7 +56,7 @@ def trt_excute():
 
         input_name = 'modelInput'
         input_shape = [-1,3,256,256]
-        profile.set_shape(input_name,(1,256,256),(16,256,256),(32,256,256,256))
+        profile.set_shape(input_name,(1,3,256,256),(16,3,256,256),(32,3,256,256))
         config.add_optimization_profile(profile)
         engineString = builder.build_serialized_network(network, config)
         if engineString == None:
