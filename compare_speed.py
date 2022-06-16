@@ -6,8 +6,8 @@ import os
 from cuda import cudart
 
 
-trtfile = ''
-onnxFile = ''
+trtfile = './mobilevit.plan'
+onnxFile = './mobilevit.onnx'
 
 img = torch.randn(1, 3, 256, 256,requires_grad=True)
 net = models.MobileViT_S()
