@@ -5,7 +5,12 @@ import numpy as np
 import os
 from cuda import cudart
 import tensorrt as trt
+seed = 20
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+np.random.seed(seed)
 
+torch.backends.cudnn.deterministic = True
 def distance(a,b):
     l2_distance = np.linalg.norm(a-b)
     cos_distance = 1-np.abs(np.dot(a,b.T).squeeze(0).squeeze(0)/(np.linalg.norm(a)*(np.linalg.norm(b))))
@@ -16,7 +21,7 @@ trtfile = './mobilevit_poly_32.plan'
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
-img = torch.randn(1, 3, 256, 256,dtype=torch.float32,requires_grad=False)
+img = torch.randn(32, 3, 256, 256,dtype=torch.float32,requires_grad=False)
 net = models.MobileViT_S()
 net.cpu()
 # img = img.cuda()
