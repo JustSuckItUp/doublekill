@@ -26,23 +26,27 @@ net = net.eval()
 out_gpu = None
 out_cpu = None
 #cpu
-
-out_cpu = net(img)
-# toc = time()
-# cpu_latency = (toc - tic) / nRound
+for i in range(20):
+    out_cpu = net(img)
+tic = time()
+for i in range(nRound):
+    out_cpu = net(img)
+toc = time()
+cpu_latency = (toc - tic) / nRound
 out_cpu = out_cpu.detach().numpy()
 #gpu
 img = img.cuda()
 net = net.cuda()
-
+for i in range(20):
+    out_gpu = net(img)
 
 torch.cuda.synchronize()
 tic = time()
-
-out_gpu = net(img)
+for i in range(nRound):
+    out_gpu = net(img)
 torch.cuda.synchronize()
-# toc = time()
-# gpu_latency = (toc - tic) / nRound
+toc = time()
+gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 print(g2c_l2,g2c_cos)
@@ -102,22 +106,21 @@ _, inputD0 = cudart.cudaMallocAsync(inputH0.nbytes, stream)
 _, outputD0 = cudart.cudaMallocAsync(outputH0.nbytes, stream)
 cudart.cudaMemcpyAsync(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
                        stream)
-# for i in range(20):
-#     context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-# cudart.cudaStreamSynchronize(stream)
-# # tic = time()
-# for i in range(nRound):
-context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-#cudart.cudaStreamSynchronize(stream)
-#toc = time()
-#trt_latency = (toc-tic)/nRound
-#print(cpu_latency,gpu_latency,trt_latency)
+for i in range(20):
+    context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+cudart.cudaStreamSynchronize(stream)
+tic = time()
+for i in range(nRound):
+    context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+cudart.cudaStreamSynchronize(stream)
+toc = time()
+trt_latency = (toc-tic)/nRound
+print(cpu_latency,gpu_latency,trt_latency)
 cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
                        cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
-print("outputH0:", outputH0.shape)
-print(outputH0)
-print(out_cpu)
+# print("outputH0:", outputH0.shape)
+# print(outputH0)
 cudart.cudaStreamSynchronize(stream)
 cudart.cudaStreamDestroy(stream)
 cudart.cudaFree(inputD0)
