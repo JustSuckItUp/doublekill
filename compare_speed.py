@@ -115,13 +115,17 @@ for i in range(nRound):
 cudart.cudaStreamSynchronize(stream)
 toc = time()
 trt_latency = (toc-tic)/nRound
-print(trt_latency)
+print(cpu_latency,gpu_latency,trt_latency)
 cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
                        cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
+
+print("outputH0:", outputH0.shape)
+print(outputH0)
 cudart.cudaStreamSynchronize(stream)
 cudart.cudaStreamDestroy(stream)
 cudart.cudaFree(inputD0)
 cudart.cudaFree(outputD0)
+
 print("Succeeded running model in TensorRT!")
 t2c_l2,t2c_cos = distance(out_cpu,outputD0)
 print(t2c_l2,t2c_cos)
