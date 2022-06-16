@@ -49,7 +49,7 @@ toc = time()
 gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
-
+print(g2c_l2,g2c_cos)
 
 
 #
