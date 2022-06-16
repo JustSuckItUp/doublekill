@@ -115,8 +115,9 @@ context.execute_async_v2([int(inputD0), int(outputD0)], stream)
 cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
                        cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
-# print("outputH0:", outputH0.shape)
-# print(outputH0)
+print("outputH0:", outputH0.shape)
+print(outputH0)
+print(out_cpu)
 cudart.cudaStreamSynchronize(stream)
 cudart.cudaStreamDestroy(stream)
 cudart.cudaFree(inputD0)
