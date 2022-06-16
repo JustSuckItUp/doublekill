@@ -26,27 +26,23 @@ net = net.eval()
 out_gpu = None
 out_cpu = None
 #cpu
-for i in range(20):
-    out_cpu = net(img)
-tic = time()
-for i in range(nRound):
-    out_cpu = net(img)
-toc = time()
-cpu_latency = (toc - tic) / nRound
+
+out_cpu = net(img)
+# toc = time()
+# cpu_latency = (toc - tic) / nRound
 out_cpu = out_cpu.detach().numpy()
 #gpu
 img = img.cuda()
 net = net.cuda()
-for i in range(20):
-    out_gpu = net(img)
+
 
 torch.cuda.synchronize()
 tic = time()
-for i in range(nRound):
-    out_gpu = net(img)
+
+out_gpu = net(img)
 torch.cuda.synchronize()
-toc = time()
-gpu_latency = (toc - tic) / nRound
+# toc = time()
+# gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 print(g2c_l2,g2c_cos)
