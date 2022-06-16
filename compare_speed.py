@@ -13,8 +13,9 @@ np.random.seed(seed)
 torch.backends.cudnn.deterministic = True
 def distance(a,b):
     l2_distance = np.linalg.norm(a-b)
-    cos_distance = 1-np.abs(np.dot(a,b.T).squeeze(0).squeeze(0)/(np.linalg.norm(a)*(np.linalg.norm(b))))
-    return [l2_distance,cos_distance]
+   # cos_distance = 1-np.abs(np.dot(a,b.T).squeeze(0).squeeze(0)/(np.linalg.norm(a)*(np.linalg.norm(b))))
+    #return [l2_distance,cos_distance]
+    return l2_distance
 
 
 trtfile = './mobilevit_poly_32.plan'
@@ -40,22 +41,22 @@ toc = time()
 cpu_latency = (toc - tic) / nRound
 out_cpu = out_cpu.detach().numpy()
 #gpu
-img = img.cuda()
-net = net.cuda()
-for i in range(20):
-    out_gpu = net(img)
-
-torch.cuda.synchronize()
-tic = time()
-for i in range(nRound):
-    out_gpu = net(img)
-torch.cuda.synchronize()
-toc = time()
-gpu_latency = (toc - tic) / nRound
-out_gpu = out_gpu.cpu().detach().numpy()
-g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
-print(g2c_l2,g2c_cos)
-
+# img = img.cuda()
+# net = net.cuda()
+# for i in range(20):
+#     out_gpu = net(img)
+#
+# torch.cuda.synchronize()
+# tic = time()
+# for i in range(nRound):
+#     out_gpu = net(img)
+# torch.cuda.synchronize()
+# toc = time()
+# gpu_latency = (toc - tic) / nRound
+# out_gpu = out_gpu.cpu().detach().numpy()
+# # g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
+# # print(g2c_l2,g2c_cos)
+# g2c_l2 = distance(out_cpu,out_gpu)
 
 #
 logger = trt.Logger(trt.Logger.VERBOSE)
@@ -133,6 +134,6 @@ cudart.cudaFree(inputD0)
 cudart.cudaFree(outputD0)
 
 print("Succeeded running model in TensorRT!")
-t2c_l2,t2c_cos = distance(out_cpu,outputH0)
-print(t2c_l2,t2c_cos)
+t2c_l2 = distance(out_cpu,outputH0)
+print(t2c_l2,)
 
