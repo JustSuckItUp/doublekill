@@ -102,16 +102,16 @@ else:
 #运行期
 context = engine.create_execution_context()
 context.set_binding_shape(0, [1, 3, 256, 256])
-_, stream = cudart.cudaStreamCreate()
+#_, stream = cudart.cudaStreamCreate()
 print("Binding0->", engine.get_binding_shape(0), context.get_binding_shape(0), engine.get_binding_dtype(0))
 print("Binding1->", engine.get_binding_shape(1), context.get_binding_shape(1), engine.get_binding_dtype(1))
 inputH0 = np.ascontiguousarray(img.cpu().numpy().reshape(-1))
 outputH0 = np.empty(context.get_binding_shape(1), dtype=trt.nptype(engine.get_binding_dtype(1)))
-_, inputD0 = cudart.cudaMallocAsync(inputH0.nbytes, stream)
-_, outputD0 = cudart.cudaMallocAsync(outputH0.nbytes, stream)
-cudart.cudaMemcpyAsync(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
-                       stream)
-context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+inputD0 = cudart.cudaMalloc(inputH0.nbytes)
+outputD0 = cudart.cudaMalloc(outputH0.nbytes)
+cudart.cudaMemcpy(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
+                       )
+context.execute_v2([int(inputD0), int(outputD0)], )
 # for i in range(20):
 #     context.execute_async_v2([int(inputD0), int(outputD0)], stream)
 # cudart.cudaStreamSynchronize(stream)
@@ -122,13 +122,13 @@ context.execute_async_v2([int(inputD0), int(outputD0)], stream)
 # toc = time()
 # trt_latency = (toc-tic)/nRound
 # print(cpu_latency,gpu_latency,trt_latency)
-cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
-                       cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
+cudart.cudaMemcpy(outputH0.ctypes.data, outputD0, outputH0.nbytes,
+                       cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost)
 
 # print("outputH0:", outputH0.shape)
 # print(outputH0)
-cudart.cudaStreamSynchronize(stream)
-cudart.cudaStreamDestroy(stream)
+# cudart.cudaStreamSynchronize(stream)
+# cudart.cudaStreamDestroy(stream)
 cudart.cudaFree(inputD0)
 cudart.cudaFree(outputD0)
 
