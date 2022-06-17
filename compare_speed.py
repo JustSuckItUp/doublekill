@@ -107,8 +107,8 @@ print("Binding0->", engine.get_binding_shape(0), context.get_binding_shape(0), e
 print("Binding1->", engine.get_binding_shape(1), context.get_binding_shape(1), engine.get_binding_dtype(1))
 inputH0 = np.ascontiguousarray(img.cpu().numpy().reshape(-1))
 outputH0 = np.empty(context.get_binding_shape(1), dtype=trt.nptype(engine.get_binding_dtype(1)))
-inputD0 = cudart.cudaMalloc(inputH0.nbytes)
-outputD0 = cudart.cudaMalloc(outputH0.nbytes)
+inputD0 = cudart.cudaMalloc(inputH0.nbytes)[1]
+outputD0 = cudart.cudaMalloc(outputH0.nbytes)[1]
 cudart.cudaMemcpy(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
                        )
 context.execute_v2([int(inputD0), int(outputD0)], )
