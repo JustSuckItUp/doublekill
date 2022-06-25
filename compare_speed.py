@@ -21,7 +21,7 @@ trtfile = './mobilevit_poly_32.plan'
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
-img = torch.randn(1, 3, 256, 256,dtype=torch.float32,requires_grad=False)
+img = torch.ones(1, 3, 256, 256,dtype=torch.float32,requires_grad=False)
 net = models.MobileViT_S()
 net.cpu()
 # img = img.cuda()
