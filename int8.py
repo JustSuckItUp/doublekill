@@ -35,7 +35,7 @@ def main():
         # Thus, if you want to store results from multiple inferences, you should use `copy.deepcopy()`.
         outputs = runner.infer({"modelInput": inp_data})
 
-        assert np.array_equal(outputs["y"], inp_data)  # It's an identity model!
+        assert np.array_equal(outputs["modelOutput"], inp_data)  # It's an identity model!
 
 
 if __name__ == "__main__":
