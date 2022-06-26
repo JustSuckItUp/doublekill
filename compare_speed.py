@@ -17,7 +17,7 @@ def distance(a,b):
     return [l2_distance,cos_distance]
 
 
-trtfile = './mobilevit_poly_32.plan'
+trtfile = './mobilevit_parser_32.plan'
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
