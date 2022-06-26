@@ -2,7 +2,7 @@ import onnx
 import onnx_graphsurgeon as gs
 import numpy as np
 graph = gs.import_onnx(onnx.load("./mobilevit.onnx"))
-sig = [node for node in graph.nodes if node.name == 'Sigmoid_3'][0]
+sig = [node for node in graph.nodes if node.name == 'Sigmoid_32'][0]
 p = sig.i()
 c = sig.o()
 g = c.o()
