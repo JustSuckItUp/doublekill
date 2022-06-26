@@ -10,5 +10,10 @@ for sig in sigmoids:
     mul_outputs = mul.outputs
     silu = gs.Node(op='SiLU',inputs=silu_inputs,outputs=mul_outputs)
     graph.nodes.append(silu)
+    downstreams = mul.o()
+    for ds in downstreams:
+        for i in range(len(ds.inputs)):
+            if ds.inputs[i] == mul_outputs[0]:
+                ds.inputs[i] = silu.outputs[0]
 graph.cleanup().toposort()
 onnx.save(gs.export_onnx(graph), "./mobilevit_silu.onnx")
