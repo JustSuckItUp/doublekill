@@ -16,5 +16,5 @@ for sig in sigmoids:
         for i in range(len(ds.inputs)):
             if ds.inputs[i] == mul_outputs[0]:
                 ds.inputs[i] = silu.outputs[0]
-graph.cleanup().toposort()
+    graph.cleanup().toposort()
 onnx.save(gs.export_onnx(graph), "./mobilevit_silu.onnx")
