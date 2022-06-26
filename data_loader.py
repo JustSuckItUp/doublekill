@@ -27,4 +27,4 @@ INPUT_SHAPE = (1, 3, 256, 256)
 
 def load_data():
     for _ in range(5):
-        yield {"x": np.ones(shape=INPUT_SHAPE, dtype=np.float32)}  # Still totally real data
+        yield {"modelInput": np.ones(shape=INPUT_SHAPE, dtype=np.float32)}  # Still totally real data
