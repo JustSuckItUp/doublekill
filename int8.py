@@ -9,7 +9,7 @@ def calib_data():
         # (as `int`s) or Polygraphy `DeviceView`s instead of NumPy arrays.
         #
         # For details on `DeviceView`, see `polygraphy/cuda/cuda.py`.
-        yield {"x": np.ones(shape=(1, 3, 256, 256), dtype=np.float32)}  # Totally real data
+        yield {"modelInput": np.ones(shape=(1, 3, 256, 256), dtype=np.float32)}  # Totally real data
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
 
         # NOTE: The runner owns the output buffers and is free to reuse them between `infer()` calls.
         # Thus, if you want to store results from multiple inferences, you should use `copy.deepcopy()`.
-        outputs = runner.infer({"x": inp_data})
+        outputs = runner.infer({"modelInput": inp_data})
 
         assert np.array_equal(outputs["y"], inp_data)  # It's an identity model!
 
