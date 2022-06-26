@@ -27,13 +27,13 @@ def main():
 
     # When we activate our runner, it will calibrate and build the engine. If we want to
     # see the logging output from TensorRT, we can temporarily increase logging verbosity:
-    with G_LOGGER.verbosity(G_LOGGER.VERBOSE), TrtRunner(build_engine) as runner:
-        # Finally, we can test out our int8 TensorRT engine with some dummy input data:
-        inp_data = np.ones(shape=(1, 3, 256, 256), dtype=np.float32)
-
-        # NOTE: The runner owns the output buffers and is free to reuse them between `infer()` calls.
-        # Thus, if you want to store results from multiple inferences, you should use `copy.deepcopy()`.
-        outputs = runner.infer({"modelInput": inp_data})
+    # with G_LOGGER.verbosity(G_LOGGER.VERBOSE), TrtRunner(build_engine) as runner:
+    #     # Finally, we can test out our int8 TensorRT engine with some dummy input data:
+    #     inp_data = np.ones(shape=(1, 3, 256, 256), dtype=np.float32)
+    #
+    #     # NOTE: The runner owns the output buffers and is free to reuse them between `infer()` calls.
+    #     # Thus, if you want to store results from multiple inferences, you should use `copy.deepcopy()`.
+    #     outputs = runner.infer({"modelInput": inp_data})
       #  print(outputs["modelOutput"])
        # print()
       #  assert np.array_equal(outputs["modelOutput"], inp_data)  # It's an identity model!
