@@ -6,11 +6,11 @@ sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 for sig in sigmoids:
     silu_inputs = sig.inputs
     mul = sig.o()
-    print(mul)
+    #print(mul)
     mul_outputs = mul.outputs
     silu = gs.Node(op='SiLU',inputs=silu_inputs,outputs=mul_outputs)
     graph.nodes.append(silu)
-    downstreams = mul.o()
+    downstreams = [node for node in mul.o()]
     for ds in downstreams:
         for i in range(len(ds.inputs)):
             if ds.inputs[i] == mul_outputs[0]:
