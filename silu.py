@@ -6,7 +6,7 @@ sig = [node for node in graph.nodes if node.name == 'Sigmoid_3'][0]
 p = sig.i()
 c = sig.o()
 g = c.o()
-print(p,c,g)
+print(p,c,g,sep='\\n')
 # sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 # for sig in sigmoids:
 #     parent_node = sig.i()
