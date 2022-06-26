@@ -14,7 +14,11 @@ p.outputs = [gs.Variable(name='parent_output')]
 silu_outputs = [gs.Variable(name='silu_output')]
 silu = gs.Node(op='SiLU',inputs=p.outputs,outputs=silu_outputs)
 graph.nodes.append(silu)
-g.inputs[0] = silu_outputs[0]
+for child in children:
+    for j in range(len(child.inputs)):
+        if child.inputs[j] == c.outputs[0]:
+            child.inputs[j] = silu_outputs
+#g.inputs[0] = silu_outputs[0]
 
 # sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 # for sig in sigmoids:
