@@ -10,7 +10,7 @@ print(p,c,g,sep='='*50)
 p.outputs = [gs.Variable(name='parent_output')]
 silu_outputs = [gs.Variable(name='silu_output')]
 silu = gs.Node(op='SiLU',inputs=p.outputs,outputs=silu_outputs)
-g.inputs[0] = silu_outputs
+g.inputs[0] = silu_outputs[0]
 # sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 # for sig in sigmoids:
 #     parent_node = sig.i()
