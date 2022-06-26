@@ -6,6 +6,7 @@ sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 for sig in sigmoids:
     silu_inputs = sig.inputs
     mul = sig.o().o()
+    print(mul)
     mul_outputs = mul.inputs
     silu = gs.Node(op='SiLU',inputs=silu_inputs,outputs=mul_outputs)
     graph.nodes.append(silu)
