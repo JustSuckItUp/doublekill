@@ -10,9 +10,9 @@ for sig in sigs:
     children = [node for node in graph.nodes if c.outputs[0] in node.inputs]
 
     #print(p,c,g,sep='='*50)
-    print(children)
-    p.outputs = [gs.Variable(name='parent_output')]
-    silu_outputs = [gs.Variable(name='silu_output')]
+   # print(children)
+    p.outputs = [gs.Variable(name='parent_output_'+sig.name)]
+    silu_outputs = [gs.Variable(name='silu_output_'+sig.name)]
     silu = gs.Node(op='SiLU',inputs=p.outputs,outputs=silu_outputs)
     graph.nodes.append(silu)
     for child in children:
