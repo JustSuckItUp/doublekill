@@ -112,16 +112,16 @@ _, outputD0 = cudart.cudaMallocAsync(outputH0.nbytes, stream)
 cudart.cudaMemcpyAsync(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
                        stream)
 context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-# for i in range(20):
-#     context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-# cudart.cudaStreamSynchronize(stream)
-# tic = time()
-# for i in range(nRound):
-#     context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-# cudart.cudaStreamSynchronize(stream)
-# toc = time()
-# trt_latency = (toc-tic)/nRound
-# print(cpu_latency,gpu_latency,trt_latency)
+for i in range(20):
+    context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+cudart.cudaStreamSynchronize(stream)
+tic = time()
+for i in range(nRound):
+    context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+cudart.cudaStreamSynchronize(stream)
+toc = time()
+trt_latency = (toc-tic)/nRound
+print(cpu_latency,gpu_latency,trt_latency)
 cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
                        cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
