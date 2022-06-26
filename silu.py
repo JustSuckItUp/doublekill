@@ -13,7 +13,7 @@ for sig in sigs:
    # print(children)
     p.outputs = [gs.Variable(name='parent_output_'+sig.name)]
     silu_outputs = [gs.Variable(name='silu_output_'+sig.name)]
-    silu = gs.Node(op='SiLU',inputs=p.outputs,outputs=silu_outputs)
+    silu = gs.Node(name='silu_'+sig.name,op='SiLU',inputs=p.outputs,outputs=silu_outputs)
     graph.nodes.append(silu)
     for child in children:
         for j in range(len(child.inputs)):
