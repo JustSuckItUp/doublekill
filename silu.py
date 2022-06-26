@@ -7,7 +7,7 @@ for sig in sigmoids:
     silu_inputs = sig.inputs
     mul = sig.o()
     print(mul)
-    mul_outputs = mul.outputs[0]
+    mul_outputs = mul.outputs
     silu = gs.Node(op='SiLU',inputs=silu_inputs,outputs=mul_outputs)
     graph.nodes.append(silu)
 graph.cleanup().toposort()
