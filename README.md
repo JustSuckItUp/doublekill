@@ -6,6 +6,7 @@ python c1.py
 ```
 ## 2. get trt engine file
 step1.生成depoly.py
+
 fp32:
 ```
 polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_poly_32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly.py" --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256]
