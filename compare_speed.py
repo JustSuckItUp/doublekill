@@ -155,7 +155,7 @@ for trtfile in trt_files:
 print("Succeeded running model in TensorRT!")
 print('outputs:')
 for k in outputs.keys():
-    outputs[k] = outputs[k][0][20]
+    outputs[k] = outputs[k][0][:20]
 print(outputs)
 print('latencies:')
 print(latencys)
