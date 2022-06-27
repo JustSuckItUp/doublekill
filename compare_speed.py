@@ -133,7 +133,7 @@ for trtfile in trt_files:
                            cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
     print("outputH0:", outputH0.shape)
-    #print(outputH0)
+    print(outputH0[:50])
     cudart.cudaStreamSynchronize(stream)
     cudart.cudaStreamDestroy(stream)
     cudart.cudaFree(inputD0)
