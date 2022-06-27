@@ -139,7 +139,9 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 **1.FP32、FP16、INT8的优化**
 
 **2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
+
 具体的实现步骤如下：
+
 
 **1.torch中生成mobilevit.onnx**
 
