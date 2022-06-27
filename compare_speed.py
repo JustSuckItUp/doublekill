@@ -61,7 +61,7 @@ torch.cuda.synchronize()
 toc = time()
 gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
-print(out_gpu[0][:50])
+#print(out_gpu[0][:50])
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 #print(g2c_l2,g2c_cos)
 outputs = {}
@@ -170,7 +170,7 @@ for k in outputs.keys():
     outputs[k] = outputs[k][0][:20]
     print(k)
     print(outputs[k])
-print(outputs)
+#print(outputs)
 print('latencies:')
 print(latencys)
 ratio = {}
