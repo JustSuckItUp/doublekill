@@ -13,6 +13,8 @@ polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobil
  --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256]
 python3 depoly_fp32.py  
 ```
+###  通过polygraphy对比onnxruntime和trt engine输出结果,反映出误差在许可范围。
+
 
 step1.生成depoly.py
 
