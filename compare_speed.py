@@ -64,12 +64,13 @@ out_gpu = out_gpu.cpu().detach().numpy()
 print(out_gpu[0][:50])
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 #print(g2c_l2,g2c_cos)
-
+outputs = {}
 latencys = {}
 latencys['cpu_latency'] = cpu_latency
 latencys['gpu_latency'] = gpu_latency
 #print(cpu_latency,gpu_latency)
-
+outputs['cpu'] = out_cpu
+outputs['gpu'] = out_cpu
 for trtfile in trt_files:
     logger = trt.Logger(trt.Logger.VERBOSE)
     if 'silu' in trtfile:
@@ -144,14 +145,16 @@ for trtfile in trt_files:
                            cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
    # print("outputH0:", outputH0.shape)
-    print(outputH0[0][:50])
-    #outputs[trtfile] = outputH0
+    #print(outputH0[0][:50])
+    outputs[trtfile] = outputH0
     cudart.cudaStreamSynchronize(stream)
     cudart.cudaStreamDestroy(stream)
     cudart.cudaFree(inputD0)
     cudart.cudaFree(outputD0)
 
 print("Succeeded running model in TensorRT!")
+print('outputs:')
+print(outputs)
 print('latencies:')
 print(latencys)
 ratio = {}
