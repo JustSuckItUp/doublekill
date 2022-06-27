@@ -18,12 +18,12 @@ def main():
     #
     # TIP: You can use this calibrator with TensorRT APIs directly (e.g. config.int8_calibrator).
     # You don't have to use it with Polygraphy loaders if you don't want to.
-    calibrator = Calibrator(data_loader=calib_data(), cache="mobilevit.cache")
-
-    # We must enable int8 mode in addition to providing the calibrator.
-    build_engine = EngineFromNetwork(
-        NetworkFromOnnxPath("mobilevit.onnx"), config=CreateConfig(int8=True, calibrator=calibrator,memory_pool_limits=200000000000)
-    )
+    # calibrator = Calibrator(data_loader=calib_data(), cache="mobilevit.cache")
+    #
+    # # We must enable int8 mode in addition to providing the calibrator.
+    # build_engine = EngineFromNetwork(
+    #     NetworkFromOnnxPath("mobilevit.onnx"), config=CreateConfig(int8=True, calibrator=calibrator,memory_pool_limits=200000000000)
+    # )
     calibrator_silu = Calibrator(data_loader=calib_data(), cache="mobilevit_silu.cache")
     build_engine = EngineFromNetwork(
         NetworkFromOnnxPath("mobilevit_silu.onnx"),
