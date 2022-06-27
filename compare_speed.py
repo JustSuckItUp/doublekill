@@ -5,6 +5,7 @@ import numpy as np
 import os
 from cuda import cudart
 import tensorrt as trt
+import ctypes
 seed = 20
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
@@ -67,6 +68,9 @@ g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 outputs = {}
 for trtfile in trt_files:
     logger = trt.Logger(trt.Logger.VERBOSE)
+    if 'silu' in trtfile:
+        trt.init_libnvinfer_plugins(logger, '')
+        ctypes.cdll.LoadLibrary('SiLU.so')
     assert os.path.isfile(trtfile)
     with open(trtfile, 'rb') as f:
         engine = trt.Runtime(logger).deserialize_cuda_engine(f.read())
