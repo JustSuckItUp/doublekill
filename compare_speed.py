@@ -61,7 +61,7 @@ torch.cuda.synchronize()
 toc = time()
 gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
-#print(out_gpu[0][:50])
+print(out_gpu[0][:50])
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 #print(g2c_l2,g2c_cos)
 
@@ -144,7 +144,7 @@ for trtfile in trt_files:
                            cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
    # print("outputH0:", outputH0.shape)
-    #print(outputH0[0][:50])
+    print(outputH0[0][:50])
     #outputs[trtfile] = outputH0
     cudart.cudaStreamSynchronize(stream)
     cudart.cudaStreamDestroy(stream)
