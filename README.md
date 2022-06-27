@@ -75,7 +75,7 @@ python3 compare_speed.py
 # relative ratio to cpu
 {'cpu_latency': 1.0, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
 ```
-![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
+
 **图中可得出结论：**
 **1.FP32,FP16,INT8均比CPU以及torch自带gpu运行速度快，而且快特别多**
 **2.FP16速度比FP32快**
@@ -101,7 +101,7 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 参考文献：Mehta S, Rastegari M. Mobilevit: light-weight, general-purpose, and mobile-friendly vision transformer[J]. arXiv preprint arXiv:2110.02178, 2021.
 
-## 3 模型优化的难点
+## 3 模型选取的动机：
 选取MobileViT的动机有以下几点：
 
 1.MobileViT本身和trt加速是契合的，它们都可以对模型进行轻量化，从而让模型更易于应用到一些硬件平台。
@@ -135,14 +135,11 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 ### 5.1 软硬件环境
 
 * 比赛提供的云计算节点，配置Ubuntu 20.04, NVIDIA A10
-* 环境：最新的ensorRT8.4版本（尚未对外发布）
+* 环境：最新的TensorRT8.4.1.4版本（尚未对外发布）
 
 ### 5.2 实验结果
 
-| 模式 | fp32 | fp16 | int8 | fp32(PWN plugin) | fp16(PWN plugin) | int8(PWN plugin) |
-| :------| ------: | :------: | :------| ------: | :------: | :------|
-| fps |   |   |   |   |   |   | 
-| 精度 |  |   |  |   |   |   | 
+![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
 
 ## 6 Bug报告
 TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
