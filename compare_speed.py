@@ -155,8 +155,8 @@ print("Succeeded running model in TensorRT!")
 print(latencys)
 ratio = {}
 for k,v in latencys.items():
-    ratio[k] /= latencys[k]/latencys['cpu_latency']
-print(ratio)
+    latencys[k] /= latencys['cpu_latency']
+print(latencys)
 # t2c_l2,t2c_cos = distance(out_cpu,outputH0)
 # print(t2c_l2,t2c_cos)
 #
