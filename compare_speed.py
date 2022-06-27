@@ -154,6 +154,15 @@ for trtfile in trt_files:
 
 print("Succeeded running model in TensorRT!")
 print('outputs:')
+
+t2c_l2,t2c_cos = distance(outputs['mobilevit_int8.plan'],outputs['mobilevit_fp32.plan'])
+print(t2c_l2,t2c_cos)
+t2c_l2,t2c_cos = distance(outputs['mobilevit_fp32_silu.plan'],outputs['mobilevit_fp32.plan'])
+print(t2c_l2,t2c_cos)
+t2c_l2,t2c_cos = distance(outputs['mobilevit_fp16_silu.plan'],outputs['mobilevit_fp32.plan'])
+print(t2c_l2,t2c_cos)
+
+
 for k in outputs.keys():
     outputs[k] = outputs[k][0][:20]
     print(k)
