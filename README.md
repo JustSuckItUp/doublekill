@@ -39,14 +39,22 @@ python3 depoly_int8.py
 ### 1.3 trt engine file with SiLU plugin
 #### 1.3.1 compile plugin
 ```
-python3 silu.py
+python3 silu.py #将Sigmoid+Mul层替换为SiLU
 cd siluPlugin
 make
 cd ..
 cp siluPlugin/SiLU.so .
 ```
-
-
+#### 1.3.2 convert .onnx to .plan with SiLU plugin
+```
+# mobilevit_fp32_silu
+trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  \
+--workspace=40000 --saveEngine=mobilevit_fp32_silu.plan --verbose --plugins=SiLU.so
+# mobilevit_fp16_silu
+trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  \
+--workspace=40000 --saveEngine=mobilevit_fp16_silu.plan --verbose --plugins=SiLU.so --fp16 
+```
+**由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述**
 
 
 ### 1.3 compare speed:
