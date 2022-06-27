@@ -1,9 +1,13 @@
 # doublekill
 
 ## 1 总述
-选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，精度提升5%（从60.00提升至70.00），加速比为1.5；fp16精度下，fp32精度下，精度提升5%（从60.00提升至70.00），加速比为1.5；int8精度下，精度提升5%（从60.00提升至70.00），加速比为1.5。整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
+选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 
+**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升93.92倍；fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升1039.15倍。INT8模式下没有通过polygraphy误差校验，FPS提升556.35倍。**
+**实现了SiLU的plugin，FP32，FP16加速比分别为501.79，614.86.**
+整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
 ### 1.1 get .onnx file
 ```
+conda activate trt
 cd ~/workdir/doublekill
 python c1.py
 ```
@@ -54,15 +58,36 @@ trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShap
 trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  \
 --workspace=40000 --saveEngine=mobilevit_fp16_silu.plan --verbose --plugins=SiLU.so --fp16 
 ```
-**1.由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述
-2.关于使用silu的plugin如何生成calibrator的cache，我们还没搞懂，所以没有进一步研究mobilevit_int8_silu**
+**1.由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述**
+
+**2.关于使用silu的plugin如何生成calibrator的cache，我们还没搞懂，所以没有进一步研究mobilevit_int8_silu**
 
 
-### 1.3 compare speed:
-使用polygraphy对比精度，运行以下文件，运行结果通过了精度校验。
+### 1.4 compare speed:
+使用polygraphy对比精度，运行以下文件，得到了1.2和1.3中trtengine的运行速度。
 ```
 python3 compare_speed.py
 ```
+可以得到结果：
+```
+# Absolute time
+{'cpu_latency': 0.049575185775756835, 'gpu_latency': 0.010647022724151611, './mobilevit_fp32.plan': 0.0016843676567077637, './mobilevit_fp16.plan': 0.0009623289108276368, './mobilevit_int8.plan': 0.0017974257469177246, './mobilevit_fp32_silu.plan': 0.0019928693771362306, './mobilevit_fp16_silu.plan': 0.0016263842582702637}
+# FPS
+{'cpu_latency': 20.17138179821039, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
+# relative ratio to cpu
+{'cpu_latency': 1.0, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
+```
+
+**图中可得出结论：**
+
+**1.FP32,FP16,INT8均比CPU以及torch自带gpu运行速度快，而且快特别多**
+
+**2.FP16速度比FP32快**
+
+**3.应用SiLU_plugin后速度变慢，猜测是自己生成的plugin没有官方算子快**
+
+**4.INT8比FP32还慢，结合上述精度部分INT8也不合格，猜测是实现过程有问题**
+
 
 最后，我们提交了开发过程中发现的几个有价值的TensorRT bug，并提交了完整清晰的代码和报告。
 
@@ -83,7 +108,7 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 参考文献：Mehta S, Rastegari M. Mobilevit: light-weight, general-purpose, and mobile-friendly vision transformer[J]. arXiv preprint arXiv:2110.02178, 2021.
 
-## 3 模型优化的难点
+## 3 模型选取的动机：
 选取MobileViT的动机有以下几点：
 
 1.MobileViT本身和trt加速是契合的，它们都可以对模型进行轻量化，从而让模型更易于应用到一些硬件平台。
@@ -100,34 +125,57 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 
 （3）使用trtexe、polygragh或者parser转化为TensorRT engine；
 
-（4）考虑针对mobilevit中部分模块编写plugin，导入engine文件实现加速。
+（4）针对MobileViT中激活函数silu,即x·sigmoid(x)，设计一个名为SiLU的plugin。
+受到https://www.zhihu.com/question/539205443/answer/2543602804?utm_source=wechat_session&utm_medium=social&utm_oi=623078813148647424&utm_content=group2_Answer&utm_campaign=shareopn
+中大佬的启发，我们从原理上寻找优化的思路
+
 
 ![image](https://user-images.githubusercontent.com/47712489/175877944-0f42fb0e-c6aa-4958-a2fb-f82b187b60ab.png) 
 
-我们从原理上寻找优化的思路。MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于这个子图，trt要启动两个kernel完成计算。
-我们以此作为切入点编写plugin进行优化，完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
+MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于上述子图，trt要启动两个kernel完成计算。而如果使用relu作为激活函数，relu与conv会融合，从而只需一个kernel完成所有运算。
+我们以此作为切入点编写plugin进行优化，试图**通过写一个plugin,将sigmoid+mul,也就是PWN算子和前一步的Conv融合**，本次比赛我们只实现了PWN算子,即SiLU的plugin,但在我们实现的plugin的基础上，是有进一步扩展，实现我们想法的潜力的。在未来的工作计划中我们会进一步将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
-1.
-2.
-3.
+本次比赛中，我们实现了
+**1.FP32、FP16、INT8的优化**
+**2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
+具体的实现步骤如下：
 
-接下来一步工作计划为将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
+**1.torch中生成mobilevit.onnx**
+**2.利用polygraphy或者trtexec生成FP32、FP16的engine，并进行精度校验。**
+**3.生成calibrator的cache和校验集**
+**4.利用trtexec和第二步中生成文件生成INT8的engine**
+**5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层**
+**6.编写SiLU的plugin实现，并编译为.so**
+**7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。**
+**8.进行速度测算。**
+
+
+
 
 ## 5 精度与加速效果
 ### 5.1 软硬件环境
 
 * 比赛提供的云计算节点，配置Ubuntu 20.04, NVIDIA A10
-* 环境：最新的ensorRT8.4版本（尚未对外发布）
+* trt环境：最新的TensorRT8.4.1.4版本（尚未对外发布）
+* others: torch 1.8.1+cu111  torchvision 0.9.1+cu111  cuda-python 11.7.0
 
 ### 5.2 实验结果
 
-| 模式 | fp32 | fp16 | int8 | fp32(PWN plugin) | fp16(PWN plugin) | int8(PWN plugin) |
-| :------| ------: | :------: | :------| ------: | :------: | :------|
-| fps |   |   |   |   |   |   | 
-| 精度 |  |   |  |   |   |   | 
+![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
+
+|   | FPS | ratio |
+| :------| ------: | :------: |
+| CPU | 20.17 | 1 |
+| GPU | 93.92 | 93.92 |
+| FP32 | 593.69 | 593.69 |
+| FP16 | 1039.15 | 1039.15 |
+| INT8 | 556.35 | 556.35 |
+| FP32_SiLU | 501.79 | 501.79 |
+| FP16_SiLU | 614.86 | 614.86 |
 
 ## 6 Bug报告
-TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
+
+### 6.1 TensorRT8.4.0环境中，无法使用onnx parser、trtexec和polygraphy convert转换我们得到的onnx模型。
 
 命令：
 ```
@@ -136,9 +184,17 @@ trtexec --onnx=mobilevit.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=mo
 
 报错：
 
- ![image](https://user-images.githubusercontent.com/47712489/175878249-a7eb3126-3c6f-46d1-939c-32aaa86fc8b9.png)
+```
+trtexec: /root/gpgpu/MachineLearning/myelin/src/compiler/optimizer/kqv_gemm_split.cpp:350: void myelin::ir::kqv_split_pattern_t::check_transpose(): Assertion `in_dims.size() == 3' failed.
+Aborted (core dumped)
+```
  
 bug解决方案：
 
 当前采用的版本未完善，采用了还未正式发布的最新TRT8.4版本，导出成功。
+### 6.2 使用polygraphy生成FP32、FP16的engine并进行校验时，通过了校验，但是用onnxparser进行手动检查时torch输出和onnxparser输出对不上，即使onnxparser直接在运行期调用polygraphy生成并校验通过的engine，也不一致。
 
+**bug未解决，群里导师们研究了几天都没有搞定**
+
+## 7.总结
+本次比赛从初赛到复赛，我们从小白逐渐开始学会了一点点trt部署的知识。复赛最后很多地方感觉都是小问题，但是碍于我们自己太菜了以及时间不太够，还有群里导师们自己的工作都太忙了没有太多时间和我们交流，所以最后很多地方还是挺可惜的。不过总的来说还是收获了很多东西，希望NV关于trt的比赛越办越好！
