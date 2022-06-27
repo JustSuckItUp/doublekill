@@ -67,7 +67,12 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 ### 5.2 实验结果
 	    fp32	fp16	int8	fp32（PWN plugin）	fp16（PWN plugin）	int8（PWN plugin）
 fps						
-精度						
+精度	
+
+| 左对齐标题 | 右对齐标题 | 居中对齐标题 |
+| :------| ------: | :------: |
+| 短文本 | 中等文本 | 稍微长一点的文本 |
+| 稍微长一点的文本 | 短文本 | 中等文本 |
 
 ## 6 Bug报告
 TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
