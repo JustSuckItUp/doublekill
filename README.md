@@ -118,12 +118,16 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 
 （3）使用trtexe、polygragh或者parser转化为TensorRT engine；
 
-（4）考虑针对mobilevit中部分模块编写plugin，导入engine文件实现加速。
+（4）针对MobileViT中激活函数silu,即x·sigmoid(x)，设计一个名为SiLU的plugin。
+受到https://www.zhihu.com/question/539205443/answer/2543602804?utm_source=wechat_session&utm_medium=social&utm_oi=623078813148647424&utm_content=group2_Answer&utm_campaign=shareopn
+中大佬的启发，我们从原理上寻找优化的思路
+
 
 ![image](https://user-images.githubusercontent.com/47712489/175877944-0f42fb0e-c6aa-4958-a2fb-f82b187b60ab.png) 
 
-我们从原理上寻找优化的思路。MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于这个子图，trt要启动两个kernel完成计算。
-我们以此作为切入点编写plugin进行优化，完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
+MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于上述子图，trt要启动两个kernel完成计算。而如果使用relu作为激活函数，relu与conv会融合，从而只需一个kernel完成所有运算。
+我们以此作为切入点编写plugin进行优化，试图
+完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
 
 1.
 2.
