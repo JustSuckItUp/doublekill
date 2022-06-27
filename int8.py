@@ -24,7 +24,11 @@ def main():
     build_engine = EngineFromNetwork(
         NetworkFromOnnxPath("mobilevit.onnx"), config=CreateConfig(int8=True, calibrator=calibrator,memory_pool_limits=200000000000)
     )
-
+    calibrator_silu = Calibrator(data_loader=calib_data(), cache="mobilevit_silu.cache")
+    build_engine = EngineFromNetwork(
+        NetworkFromOnnxPath("mobilevit_silu.onnx"),
+        config=CreateConfig(int8=True, memory_pool_limits=200000000000,calibrator=calibrator_silu)
+    )
     # When we activate our runner, it will calibrate and build the engine. If we want to
     # see the logging output from TensorRT, we can temporarily increase logging verbosity:
     # with G_LOGGER.verbosity(G_LOGGER.VERBOSE), TrtRunner(build_engine) as runner:

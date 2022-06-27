@@ -19,7 +19,6 @@ for sig in sigs:
         for j in range(len(child.inputs)):
             if child.inputs[j] == c.outputs[0]:
                 child.inputs[j] = silu_outputs[0]
-#g.inputs[0] = silu_outputs[0]
 
 # sigmoids =  [node for node in graph.nodes if node.op == 'Sigmoid']
 # for sig in sigmoids:
