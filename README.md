@@ -153,9 +153,14 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 **4.利用trtexec和第二步中生成文件生成INT8的engine**
 
 **5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层**
+
 优化前计算图：
 ![image](https://user-images.githubusercontent.com/47239326/175954919-a54431b6-49dc-4384-b8df-445f2355bfd9.png)
+
+
 优化后计算图：
+
+
 ![image](https://user-images.githubusercontent.com/47239326/175955071-e56d2ca9-c886-4a67-a34f-1d1fac9edba6.png)
 
 
