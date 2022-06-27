@@ -7,6 +7,7 @@
 整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
 ### 1.1 get .onnx file
 ```
+conda activate trt
 cd ~/workdir/doublekill
 python c1.py
 ```
