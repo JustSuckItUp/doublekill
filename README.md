@@ -2,8 +2,13 @@
 
 ## 1 总述
 选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 
-**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升93.92倍；fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升1039.15倍。INT8模式下没有通过polygraphy误差校验，FPS提升556.35倍。**
-**实现了SiLU的plugin，FP32，FP16加速比分别为501.79，614.86.**
+**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。**
+
+* fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升**29.43倍**；
+* fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升**51.52倍**。
+* INT8模式下没有通过polygraphy误差校验，FPS提升**27.58倍**。
+
+**实现了SiLU的plugin，FP32，FP16加速比分别为24.88，30.48**
 整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
 ### 1.1 get .onnx file
 ```
@@ -135,20 +140,44 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于上述子图，trt要启动两个kernel完成计算。而如果使用relu作为激活函数，relu与conv会融合，从而只需一个kernel完成所有运算。
 我们以此作为切入点编写plugin进行优化，试图**通过写一个plugin,将sigmoid+mul,也就是PWN算子和前一步的Conv融合**，本次比赛我们只实现了PWN算子,即SiLU的plugin,但在我们实现的plugin的基础上，是有进一步扩展，实现我们想法的潜力的。在未来的工作计划中我们会进一步将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
-本次比赛中，我们实现了
+本次比赛中，我们实现了：
+
 **1.FP32、FP16、INT8的优化**
+
 **2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
+
+
 具体的实现步骤如下：
 
 **1.torch中生成mobilevit.onnx**
-**2.利用polygraphy或者trtexec生成FP32、FP16的engine，并进行精度校验。**
-**3.生成calibrator的cache和校验集**
-**4.利用trtexec和第二步中生成文件生成INT8的engine**
-**5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层**
-**6.编写SiLU的plugin实现，并编译为.so**
-**7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。**
-**8.进行速度测算。**
 
+**2.利用polygraphy或者trtexec生成FP32、FP16的engine，并进行精度校验。**
+
+**3.生成calibrator的cache和校验集**
+
+**4.利用trtexec和第二步中生成文件生成INT8的engine**
+
+**5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层**
+
+
+
+优化前计算图：
+
+
+![image](https://user-images.githubusercontent.com/47239326/175954919-a54431b6-49dc-4384-b8df-445f2355bfd9.png)
+
+
+优化后计算图：
+
+
+![image](https://user-images.githubusercontent.com/47239326/175955071-e56d2ca9-c886-4a67-a34f-1d1fac9edba6.png)
+
+
+**6.编写SiLU的plugin实现，并编译为.so**
+
+**7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。**
+
+**8.进行速度测算。**
 
 
 
@@ -161,40 +190,23 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 
 ### 5.2 实验结果
 
-![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
 
 |   | FPS | ratio |
 | :------| ------: | :------: |
-| CPU | 20.17 | 1 |
-| GPU | 93.92 | 93.92 |
-| FP32 | 593.69 | 593.69 |
-| FP16 | 1039.15 | 1039.15 |
-| INT8 | 556.35 | 556.35 |
-| FP32_SiLU | 501.79 | 501.79 |
-| FP16_SiLU | 614.86 | 614.86 |
+| CPU(torch) | 20.17 | 1 |
+| GPU(torch) | 93.92 | 4.66 |
+| FP32 | 593.69 | 29.43 |
+| FP16 | 1039.15 | 51.52 |
+| INT8 | 556.35 | 27.58 |
+| FP32_SiLU | 501.79 | 24.88 |
+| FP16_SiLU | 614.86 | 30.48 |
 
 ## 6 Bug报告
 
-### 6.1 TensorRT8.4.0环境中，无法使用onnx parser、trtexec和polygraphy convert转换我们得到的onnx模型。
+### 6.1 使用polygraphy生成FP32、FP16的engine并进行校验时，通过了校验，但是用onnxparser进行手动检查时torch输出和onnxparser输出对不上，即使onnxparser直接在运行期调用polygraphy生成并校验通过的engine，也不一致。
 
-命令：
-```
-trtexec --onnx=mobilevit.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  --workspace=40000 --saveEngine=mobilevit.plan --verbose
-```
 
-报错：
+**bug未解决。。**
 
-```
-trtexec: /root/gpgpu/MachineLearning/myelin/src/compiler/optimizer/kqv_gemm_split.cpp:350: void myelin::ir::kqv_split_pattern_t::check_transpose(): Assertion `in_dims.size() == 3' failed.
-Aborted (core dumped)
-```
- 
-bug解决方案：
-
-当前采用的版本未完善，采用了还未正式发布的最新TRT8.4版本，导出成功。
-### 6.2 使用polygraphy生成FP32、FP16的engine并进行校验时，通过了校验，但是用onnxparser进行手动检查时torch输出和onnxparser输出对不上，即使onnxparser直接在运行期调用polygraphy生成并校验通过的engine，也不一致。
-
-**bug未解决，群里导师们研究了几天都没有搞定**
-
-## 7.总结
-本次比赛从初赛到复赛，我们从小白逐渐开始学会了一点点trt部署的知识。复赛最后很多地方感觉都是小问题，但是碍于我们自己太菜了以及时间不太够，还有群里导师们自己的工作都太忙了没有太多时间和我们交流，所以最后很多地方还是挺可惜的。不过总的来说还是收获了很多东西，希望NV关于trt的比赛越办越好！
+## 7.经验与体会
+本次比赛从初赛到复赛，我们从小白逐渐开始学会了一点点trt部署的知识。复赛最后很多地方感觉都是小问题，但是碍于我们自己太菜了以及时间不太够，所以最后很多地方还是挺可惜的。不过总的来说还是收获了很多东西，希望NV关于trt的比赛越办越好！
