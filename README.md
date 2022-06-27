@@ -133,7 +133,7 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 **2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
 具体的实现步骤如下：
 
-1.torch中生成mobilevit.onnx
+**1.torch中生成mobilevit.onnx
 
 2.利用polygraphy或者trtexec生成FP32、FP16的engine，并进行精度校验。
 
@@ -145,7 +145,7 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 
 6.编写SiLU的plugin实现，并编译为.so
 
-7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。
+7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。**
 
 8.进行速度测算。
 
