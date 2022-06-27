@@ -135,13 +135,14 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于上述子图，trt要启动两个kernel完成计算。而如果使用relu作为激活函数，relu与conv会融合，从而只需一个kernel完成所有运算。
 我们以此作为切入点编写plugin进行优化，试图**通过写一个plugin,将sigmoid+mul,也就是PWN算子和前一步的Conv融合**，本次比赛我们只实现了PWN算子,即SiLU的plugin,但在我们实现的plugin的基础上，是有进一步扩展，实现我们想法的潜力的。在未来的工作计划中我们会进一步将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
-本次比赛中，我们实现了
+本次比赛中，我们实现了：
+
 **1.FP32、FP16、INT8的优化**
 
 **2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
 
-具体的实现步骤如下：
 
+具体的实现步骤如下：
 
 **1.torch中生成mobilevit.onnx**
 
@@ -158,7 +159,6 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 **7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。**
 
 **8.进行速度测算。**
-
 
 
 
