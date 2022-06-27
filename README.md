@@ -126,14 +126,23 @@ MobileViT项目已经开源了训练好的模型，接下来需要完成的是�
 ![image](https://user-images.githubusercontent.com/47712489/175877944-0f42fb0e-c6aa-4958-a2fb-f82b187b60ab.png) 
 
 MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于上述子图，trt要启动两个kernel完成计算。而如果使用relu作为激活函数，relu与conv会融合，从而只需一个kernel完成所有运算。
-我们以此作为切入点编写plugin进行优化，试图
-完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
+我们以此作为切入点编写plugin进行优化，试图**通过写一个plugin,将sigmoid+mul,也就是PWN算子和前一步的Conv融合**，本次比赛我们只实现了PWN算子,即SiLU的plugin,但在我们实现的plugin的基础上，是有进一步扩展，实现我们想法的潜力的。在未来的工作计划中我们会进一步将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
-1.
-2.
-3.
+本次比赛中，我们实现了
+**1.FP32、FP16、INT8的优化**
+**2.SiLU的plugin实现,接入plugin后实现FP32,FP16**
+具体的实现步骤如下：
 
-接下来一步工作计划为将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
+1.torch中生成mobilevit.onnx
+2.利用polygraphy或者trtexec生成FP32、FP16的engine，并进行精度校验。
+3.生成calibrator的cache和校验集
+4.利用trtexec和第二步中生成文件生成INT8的engine
+5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层
+6.编写SiLU的plugin实现，并编译为.so
+7.利用5.6步中生成文件和trtexec生成FP32、FP16的engine。
+8.进行速度测算。
+
+
 
 ## 5 精度与加速效果
 ### 5.1 软硬件环境
@@ -146,6 +155,8 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 ![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
 
 ## 6 Bug报告
+
+1.
 TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
 
 命令：
