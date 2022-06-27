@@ -54,7 +54,8 @@ trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShap
 trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  \
 --workspace=40000 --saveEngine=mobilevit_fp16_silu.plan --verbose --plugins=SiLU.so --fp16 
 ```
-**由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述**
+**1.由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述
+2.关于使用silu的plugin如何生成calibrator的cache，我们还没搞懂，所以没有进一步研究mobilevit_int8_silu**
 
 
 ### 1.3 compare speed:
