@@ -47,7 +47,9 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 ## 3 模型优化的难点
 选取MobileViT的动机有以下几点：
+
 1.MobileViT本身和trt加速是契合的，它们都可以对模型进行轻量化，从而让模型更易于应用到一些硬件平台。
+
 2.目前并没有对MobileViT，尤其是MobileViT block的trt实现，这对一个效果很好的轻量化模型来说是很可惜的，此外MobileViT block是一个即插即用的模块，开发出对应的plugin会对之后其他的工作有很大的贡献。
 
 ## 4 优化过程
@@ -65,14 +67,11 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 ### 5.1 软硬件环境
 
 ### 5.2 实验结果
-	    fp32	fp16	int8	fp32（PWN plugin）	fp16（PWN plugin）	int8（PWN plugin）
-fps						
-精度	
 
 | 模式 | fp32 | fp16 | int8 | fp32(PWN plugin) | fp16(PWN plugin) | int8(PWN plugin) |
 | :------| ------: | :------: | :------| ------: | :------: | :------|
 | fps |   |   |   |   |   |   | 
-| 精度 | 短文本 | 中等文本 |  |   |   |   | 
+| 精度 |  |   |  |   |   |   | 
 
 ## 6 Bug报告
 TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
