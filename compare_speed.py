@@ -159,8 +159,9 @@ for k,v in latencys.items():
     latencys[k] = 1/latencys[k]
 print('fps:')
 print(latencys)
+a = latencys['cpu_latency']
 for k,v in latencys.items():
-    latencys[k] /= latencys['cpu_latency']
+    latencys[k] /= a
 print('ratio:')
 print(latencys)
 # t2c_l2,t2c_cos = distance(out_cpu,outputH0)
