@@ -7,13 +7,33 @@
 python c1.py
 ```
 ### 1.2 get trt engine file
-#### 1.3 get fp32_engine:mobilevit_fp32.plan
+#### 1.2.1 get fp32_engine:mobilevit_fp32.plan
 ```
 polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_fp32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly_fp32.py" \
  --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256]
 python3 depoly_fp32.py  
 ```
-###  通过polygraphy对比onnxruntime和trt engine输出结果,反映出误差在许可范围。
+**通过polygraphy对比onnxruntime和trt engine输出结果,反映出误差在许可范围：**
+![image](https://user-images.githubusercontent.com/47239326/175920488-e8df7a55-02f6-45ed-9841-4175d80843c9.png)
+
+#### 1.2.2 get fp16_engine:mobilevit_fp16.plan
+```
+polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_fp16.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly_fp16.py" --trt-min-shapes modelInput:[1,3,256,256]  \
+ --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256] --fp16 
+python3 depoly_fp16.py 
+```
+**通过polygraphy对比onnxruntime和trt engine输出结果,反映出误差在许可范围：**
+![image](https://user-images.githubusercontent.com/47239326/175921854-0a471c9d-188a-42b9-a8c5-ec68cf600856.png)
+
+#### 1.2.3 get int8_engine:mobilevit_int8.plan
+```
+python3 int8.py  #generate calib-cache
+polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_int8.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly_int8.py" \
+--trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256] --int8 --calibration-cache mobilevit.cache 
+python3 depoly_int8.py
+```
+**通过polygraphy对比onnxruntime和trt engine输出结果,误差没有通过，不过polygraphy的误差是element-wise的，从下图可看出绝大部分元素误差还是较低的，只有个别元素误差较大，这部分后续还要继续改善**
+![image](https://user-images.githubusercontent.com/47239326/175922812-5ff21b43-3bd9-4b1b-b1d2-f370509990af.png)
 
 
 step1.生成depoly.py
