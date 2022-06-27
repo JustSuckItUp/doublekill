@@ -4,9 +4,10 @@
 选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，精度提升5%（从60.00提升至70.00），加速比为1.5；fp16精度下，fp32精度下，精度提升5%（从60.00提升至70.00），加速比为1.5；int8精度下，精度提升5%（从60.00提升至70.00），加速比为1.5。整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
 ### 1.1 get .onnx file
 ```
+cd ~/workdir/doublekill
 python c1.py
 ```
-### 1.2 get trt engine file
+### 1.2  trt engine file without plugin
 #### 1.2.1 get fp32_engine:mobilevit_fp32.plan
 ```
 polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_fp32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly_fp32.py" \
@@ -35,22 +36,19 @@ python3 depoly_int8.py
 **通过polygraphy对比onnxruntime和trt engine输出结果,误差没有通过，polygraphy的误差是element-wise的比较严格，从下图可看出一些元素误差较大，这部分后续还要继续改善**
 ![image](https://user-images.githubusercontent.com/47239326/175922812-5ff21b43-3bd9-4b1b-b1d2-f370509990af.png)
 
-
-step1.生成depoly.py
-
-fp32:
+### 1.3 trt engine file with SiLU plugin
+#### 1.3.1 compile plugin
 ```
-polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_poly_32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly.py" --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256]
-```
-fp16:
-```
-polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_poly_32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly.py" --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256] --fp16
+python3 silu.py
+cd siluPlugin
+make
+cd ..
+cp siluPlugin/SiLU.so .
 ```
 
-step2. 生成engine
-```
-python depoly.py
-```
+
+
+
 ### 1.3 compare speed:
 使用polygraphy对比精度，运行以下文件，运行结果通过了精度校验。
 ```
