@@ -14,7 +14,7 @@
 ```
 conda activate trt
 cd ~/workdir/doublekill
-python c1.py
+python3 c1.py
 ```
 ### 1.2  trt engine file without plugin
 #### 1.2.1 get fp32_engine:mobilevit_fp32.plan
