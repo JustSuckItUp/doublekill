@@ -24,7 +24,7 @@ trt_fp32_silu = './mobilevit_fp32_silu.plan'
 trt_fp16_silu = './mobilevit_fp16_silu.plan'
 #trt_int8_silu = './mobilevit_int8_silu.plan'
 #trt_files = [trt_fp32,trt_fp16,trt_int8,trt_fp32_silu,trt_fp16_silu]
-trt_files = [trt_fp32,trt_fp16]
+trt_files = [trt_fp32,trt_fp16,trt_int8,trt_fp32_silu,trt_fp16_silu]
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
@@ -60,10 +60,11 @@ torch.cuda.synchronize()
 toc = time()
 gpu_latency = (toc - tic) / nRound
 out_gpu = out_gpu.cpu().detach().numpy()
-print(out_gpu[0][:50])
+#print(out_gpu[0][:50])
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
-print(g2c_l2,g2c_cos)
+#print(g2c_l2,g2c_cos)
 
+outputs = {}
 for trtfile in trt_files:
     logger = trt.Logger(trt.Logger.VERBOSE)
     assert os.path.isfile(trtfile)
@@ -135,13 +136,15 @@ for trtfile in trt_files:
 
     print("outputH0:", outputH0.shape)
     print(outputH0[0][:50])
-
+    outputs[trtfile] = outputH0
     cudart.cudaStreamSynchronize(stream)
     cudart.cudaStreamDestroy(stream)
     cudart.cudaFree(inputD0)
     cudart.cudaFree(outputD0)
 
     print("Succeeded running model in TensorRT!")
+
+
 # t2c_l2,t2c_cos = distance(out_cpu,outputH0)
 # print(t2c_l2,t2c_cos)
 #
