@@ -150,7 +150,8 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 ### 5.1 软硬件环境
 
 * 比赛提供的云计算节点，配置Ubuntu 20.04, NVIDIA A10
-* 环境：最新的TensorRT8.4.1.4版本（尚未对外发布）
+* trt环境：最新的TensorRT8.4.1.4版本（尚未对外发布）
+* others: torch 1.8.1+cu111  torchvision 0.9.1+cu111  cuda-python 11.7.0
 
 ### 5.2 实验结果
 
