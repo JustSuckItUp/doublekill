@@ -155,6 +155,7 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 **5.利用onnx库对mobilevit.onnx进行图优化，将Sigmoid+Mul层替换为SiLU层**
 
 
+
 优化前计算图：
 ![image](https://user-images.githubusercontent.com/47239326/175954919-a54431b6-49dc-4384-b8df-445f2355bfd9.png)
 
