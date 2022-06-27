@@ -205,6 +205,12 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 
 ### 6.1 使用polygraphy生成FP32、FP16的engine并进行校验时，通过了校验，但是用onnxparser进行手动检查时torch输出和onnxparser输出对不上，即使onnxparser直接在运行期调用polygraphy生成并校验通过的engine，也不一致。
 
+####reproduction: python3 compare_speed.py
+#### expect: out_cpu out_gpu 和 out_fp32 out_fp16应该大致一致
+#### Actual： 
+![image](https://user-images.githubusercontent.com/47239326/175968966-11bd3d8f-43e8-4915-86e9-e7a603c577cf.png)
+
+**但是fp16和fp32在polygraphy中又通过了测验**
 
 **bug未解决。。**
 
