@@ -54,14 +54,23 @@ trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShap
 trtexec --onnx=mobilevit_silu.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  \
 --workspace=40000 --saveEngine=mobilevit_fp16_silu.plan --verbose --plugins=SiLU.so --fp16 
 ```
-**1.由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述
-2.关于使用silu的plugin如何生成calibrator的cache，我们还没搞懂，所以没有进一步研究mobilevit_int8_silu**
+**1.由于polygraphy对比精度时是将onnxruntime的输出和trt的输出对比，而onnxruntime中识别不了SiLU算子，所以不能对比精度，我们尝试用parser对比精度时出了bug会在后文中详述**
+**2.关于使用silu的plugin如何生成calibrator的cache，我们还没搞懂，所以没有进一步研究mobilevit_int8_silu**
 
 
-### 1.3 compare speed:
-使用polygraphy对比精度，运行以下文件，运行结果通过了精度校验。
+### 1.4 compare speed:
+使用polygraphy对比精度，运行以下文件，得到了1.2和1.3中trtengine的运行速度。
 ```
 python3 compare_speed.py
+```
+可以得到结果：
+```
+# Absolute time
+{'cpu_latency': 0.049575185775756835, 'gpu_latency': 0.010647022724151611, './mobilevit_fp32.plan': 0.0016843676567077637, './mobilevit_fp16.plan': 0.0009623289108276368, './mobilevit_int8.plan': 0.0017974257469177246, './mobilevit_fp32_silu.plan': 0.0019928693771362306, './mobilevit_fp16_silu.plan': 0.0016263842582702637}
+# FPS
+{'cpu_latency': 20.17138179821039, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
+# relative ratio to cpu
+{'cpu_latency': 1.0, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
 ```
 
 最后，我们提交了开发过程中发现的几个有价值的TensorRT bug，并提交了完整清晰的代码和报告。
