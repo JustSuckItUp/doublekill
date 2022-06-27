@@ -171,7 +171,6 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 
 ### 5.2 实验结果
 
-![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
 
 |   | FPS | ratio |
 | :------| ------: | :------: |
