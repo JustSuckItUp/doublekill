@@ -42,8 +42,18 @@ polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobil
 --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256] --int8 --calibration-cache mobilevit.cache 
 python3 depoly_int8.py
 ```
-**通过polygraphy对比onnxruntime和trt engine输出结果,误差没有通过，polygraphy的误差是element-wise的比较严格，从下图可看出一些元素误差较大，这部分后续还要继续改善**
+
 ![image](https://user-images.githubusercontent.com/47239326/175922812-5ff21b43-3bd9-4b1b-b1d2-f370509990af.png)
+
+**通过polygraphy对比onnxruntime和trt engine输出结果,误差没有通过，polygraphy的误差是element-wise的比较严格，从下图可看出一些元素误差较大，这部分后续还要继续改善，但从另一种测量方法(1-余弦相似度)测量结果来看能通过检查**
+
+
+```
+python3 compare_speed.py 
+#mobilevit_int8.plan to mobilevit_fp32.plan
+#l2和cos距离分别为：
+#0.09598783 0.0018644332885742188
+```
 
 ### 1.3 trt engine file with SiLU plugin
 #### 1.3.1 compile plugin
