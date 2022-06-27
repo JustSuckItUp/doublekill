@@ -163,9 +163,19 @@ MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx�
 
 ![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
 
+|   | FPS | ratio |
+| :------| ------: | :------: |
+| CPU | 20.17 | 1 |
+| GPU | 93.92 | 93.92 |
+| FP32 | 593.69 | 593.69 |
+| FP16 | 1039.15 | 1039.15 |
+| INT8 | 556.35 | 556.35 |
+| FP32_SiLU | 501.79 | 501.79 |
+| FP16_SiLU | 614.86 | 614.86 |
+
 ## 6 Bug报告
 
-###6.1 TensorRT8.4.0环境中，无法使用onnx parser、trtexec和polygraphy convert转换我们得到的onnx模型。
+### 6.1 TensorRT8.4.0环境中，无法使用onnx parser、trtexec和polygraphy convert转换我们得到的onnx模型。
 
 命令：
 ```
