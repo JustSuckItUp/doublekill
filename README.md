@@ -56,6 +56,8 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 ## 4 优化过程
 
+MobileViT项目已经开源了训练好的模型，接下来需要完成的是迁移到TensorRT中进行部署。
+
 （1）搭建环境、跑通原项目代码；
 
 （2）Pytorch框架导出ONNX，考虑到加速性能和精度的trade-off,尝试FP32、FP16、INT8三种精度的加速；
@@ -66,14 +68,14 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 ![image](https://user-images.githubusercontent.com/47712489/175877944-0f42fb0e-c6aa-4958-a2fb-f82b187b60ab.png) 
 
-从原理上进行分析，MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于这个子图，trt要启动两个kernel完成计算。
+我们从原理上寻找优化的思路。MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于这个子图，trt要启动两个kernel完成计算。
 我们以此作为切入点编写plugin进行优化，完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
 
 1.
 2.
 3.
 
-接下来一步工作计划为将conv层和sigmoid+mul融合为一个算子，编写plugin实现。这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
+接下来一步工作计划为将conv层和sigmoid+mul融合为一个算子，编写plugin实现。算子融合能够减少访存和拷贝数据量，提高访问效率，这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
 ## 5 精度与加速效果
 ### 5.1 软硬件环境
