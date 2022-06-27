@@ -2,7 +2,7 @@
 
 ## 1 总述
 选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 
-**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。
+**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。**
 
 * fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升29.43倍；
 * fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升51.52倍。
