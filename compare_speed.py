@@ -152,10 +152,16 @@ for trtfile in trt_files:
     cudart.cudaFree(outputD0)
 
 print("Succeeded running model in TensorRT!")
+print('latencies:')
 print(latencys)
 ratio = {}
 for k,v in latencys.items():
+    latencys[k] = 1/latencys[k]
+print('fps:')
+print(latencys)
+for k,v in latencys.items():
     latencys[k] /= latencys['cpu_latency']
+print('ratio:')
 print(latencys)
 # t2c_l2,t2c_cos = distance(out_cpu,outputH0)
 # print(t2c_l2,t2c_cos)
