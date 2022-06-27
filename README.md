@@ -34,16 +34,18 @@ python3 compare_speed.py
 ## 2 原始模型
 MobileViT，是一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，由苹果公司在2021年底提出。该网络架构利用了CNN中的空间归纳偏置优势以及对数据增强技巧的低敏感性的特性，结合了ViT中对输入特征图信息进行自适应加权和建立全局依赖关系等优点，有效结合了CNN的归纳偏置优势和ViT的全局感受野能力。具体做法如下：
 
-![image](https://user-images.githubusercontent.com/47712489/175877532-0b7d0cbc-7771-49f9-beb1-f38bbc04b6fd.png)
+![image](https://user-images.githubusercontent.com/47712489/175880612-3e22fbe8-a026-488a-a03e-d74c329dfb0b.png)
 
 如上图所示，MobileViT的一个特点是提出了MobileViT block（如上图1（b）所示）, MobileViT块使用标准卷积和Transformer来有效的结合local和global的视觉表征信息，以实现“transformer as convolution”的操作。具体来说，我们知道标准卷积主要涉及三个操作：展开（unfloading） 、局部处理（local processing） 和展开（folding）。MobileVIT block通过Figure 1的结构，将第二部分替换成tranformer，达到了 “transformer as convolution”的一个结构。 这个结构由于既有CNN的局部注意力，又有tranformer的全局注意力，可以很好的提取特征，因此可以用来构建一个轻量化的模型。
 MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义分割）上都取得了比当前轻量级 CNN或ViT模型更好的性能。值得注意的一点：不同于大多数基于ViT的模型，MobileViT模型仅仅使用基础的数据增强训练方式，就达到了更优的性能。
 
-![image](https://user-images.githubusercontent.com/47712489/175877602-3ff75e22-bdc4-48a0-8a97-8bcf03b89228.png)
+![image](https://user-images.githubusercontent.com/47712489/175880861-20f888e2-c4af-4dcb-9e2d-5ae26dc45eca.png)
 
 实验结果表明，MobileViT在不同的任务和数据集上显著优于基于CNN和ViT的网络。在ImageNet-1k数据集上，MobileViT实现了78.4%的Top-1精度，拥有约600万个参数，对于类似数量的参数，其精度分别比MobileNetv3（基于CNN）和DeIT（基于ViT）高3.2%和6.2%。在MS-COCO目标检测任务中，对于相同数量的参数，MobileViT比MobileNetv3的准确度高5.7%。如下图所示。
 
-![image](https://user-images.githubusercontent.com/47712489/175877703-0f6d00bf-267a-4ccf-9761-7b36a09b986b.png)
+![image](https://user-images.githubusercontent.com/47712489/175880970-83fbae8e-ee42-4f17-93d4-c648423abd72.png)
+
+参考文献：Mehta S, Rastegari M. Mobilevit: light-weight, general-purpose, and mobile-friendly vision transformer[J]. arXiv preprint arXiv:2110.02178, 2021.
 
 ## 3 模型优化的难点
 选取MobileViT的动机有以下几点：
@@ -58,13 +60,18 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 从原理上进行分析，MobileViT模型采用了SiLU作为激活函数，对于SiLU激活函数，onnx里面会用 sigmoid+mul 的方式进行表示，tensorRT进行推理的时候会触发pointwise operator融合，把 sigmoid+mul 融合成一个 PWN 算子进行计算，但PWN算子不会进一步和前面的 Conv 进行融合。这导致对于这个子图，trt要启动两个kernel完成计算。
 我们以此作为切入点编写plugin进行优化，完成了Sigmioid+Mul部分的plugin编写，即PWN plugin，在速度上取得了明显的提升。在tensorRT进行推理的速度为：fp32，fp16，int8。使用我们编写的plugin后速度为：fp32，fp16，int8。具体的实现步骤如下：
+
 1.
 2.
 3.
+
 接下来一步工作计划为将conv层和sigmoid+mul融合为一个算子，编写plugin实现。这是一个非常不错的优化思路，由于比赛时间有限，我们暂未能实现这一部分，在之后我们将继续学习和探索，进一步补充完成。
 
 ## 5 精度与加速效果
 ### 5.1 软硬件环境
+
+* 硬件：云主机
+* 软件：TRT 8.4
 
 ### 5.2 实验结果
 
@@ -75,14 +82,17 @@ MobileViT 在不同的端侧视觉任务（图像分类、物体检测、语义�
 
 ## 6 Bug报告
 TensorRT8.4.0环境中，无法使用trtexec和polygraphy convert转换我们得到的onnx模型。
+
 命令：
 ```
 trtexec --onnx=mobilevit.onnx  --minShapes=modelInput:1x3x256x256 --optShapes=modelInput:16x3x256x256  --maxShapes=modelInput:32x3x256x256  --workspace=40000 --saveEngine=mobilevit.plan --verbose
 ```
+
 报错：
 
  ![image](https://user-images.githubusercontent.com/47712489/175878249-a7eb3126-3c6f-46d1-939c-32aaa86fc8b9.png)
  
 bug解决方案：
+
 当前采用的版本未完善，采用了还未正式发布的最新TRT8.4版本，导出成功。
 
