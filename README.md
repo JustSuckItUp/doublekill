@@ -7,6 +7,13 @@
 python c1.py
 ```
 ### 1.2 get trt engine file
+#### 1.3 get fp32_engine:mobilevit_fp32.plan
+```
+polygraphy run mobilevit.onnx --onnxrt --trt --workspace 22G --save-engine=mobilevit_fp32.plan --atol 1e-3 --rtol 1e-3 --verbose --gen-script "./depoly_fp32.py" \
+ --trt-min-shapes modelInput:[1,3,256,256]   --trt-opt-shapes modelInput:[16,3,256,256]   --trt-max-shapes modelInput:[32,3,256,256] --input-shapes modelInput:[1,3,256,256]
+python3 depoly_fp32.py  
+```
+
 step1.生成depoly.py
 
 fp32:
