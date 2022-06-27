@@ -17,7 +17,13 @@ def distance(a,b):
     return [l2_distance,cos_distance]
 
 
-trtfile = './mobilevit_fp32.plan'
+trt_fp32 = './mobilevit_fp32.plan'
+trt_fp16 = './mobilevit_fp16.plan'
+trt_int8 = './mobilevit_int8.plan'
+trt_fp32_silu = './mobilevit_fp32_silu.plan'
+trt_fp16_silu = './mobilevit_fp16_silu.plan'
+trt_int8_silu = './mobilevit_int8_silu.plan'
+trt_files = [trt_fp32,trt_fp16,trt_int8,trt_fp32_silu,trt_fp16_silu,trt_int8_silu]
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
@@ -56,83 +62,83 @@ out_gpu = out_gpu.cpu().detach().numpy()
 g2c_l2,g2c_cos = distance(out_cpu,out_gpu)
 print(g2c_l2,g2c_cos)
 
-
-#
-logger = trt.Logger(trt.Logger.VERBOSE)
-if os.path.isfile(trtfile):
+for trtfile in trt_files:
+    logger = trt.Logger(trt.Logger.VERBOSE)
+    assert os.path.isfile(trtfile)
     with open(trtfile, 'rb') as f:
         engine = trt.Runtime(logger).deserialize_cuda_engine(f.read())
     if engine == None:
         print("Failed loading engine!")
         exit()
     print("Succeeded loading engine!")
-else:
-    builder = trt.Builder(logger)
-    network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
-    profile = builder.create_optimization_profile()
-    config = builder.create_builder_config()
-   # config.flags = 1 << int(trt.BuilderFlag.FP16)
-    config.max_workspace_size = 3 << 30
-    parser = trt.OnnxParser(network, logger)
-    if not os.path.exists(onnxFile):
-        print("Failed finding ONNX file!")
-        exit()
-    print("Succeeded finding ONNX file!")
-    with open(onnxFile, 'rb') as model:
-        if not parser.parse(model.read()):
-            print("Failed parsing ONNX file!")
-            for error in range(parser.num_errors):
-                print(parser.get_error(error))
-            exit()
-        print("Succeeded parsing ONNX file!")
+    # else:
+    #     builder = trt.Builder(logger)
+    #     network = builder.create_network(1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH))
+    #     profile = builder.create_optimization_profile()
+    #     config = builder.create_builder_config()
+    #    # config.flags = 1 << int(trt.BuilderFlag.FP16)
+    #     config.max_workspace_size = 3 << 30
+    #     parser = trt.OnnxParser(network, logger)
+    #     if not os.path.exists(onnxFile):
+    #         print("Failed finding ONNX file!")
+    #         exit()
+    #     print("Succeeded finding ONNX file!")
+    #     with open(onnxFile, 'rb') as model:
+    #         if not parser.parse(model.read()):
+    #             print("Failed parsing ONNX file!")
+    #             for error in range(parser.num_errors):
+    #                 print(parser.get_error(error))
+    #             exit()
+    #         print("Succeeded parsing ONNX file!")
+    #
+    #     input_name = 'modelInput'
+    #     input_shape = [-1,3,256,256]
+    #     profile.set_shape(input_name,(1,3,256,256),(16,3,256,256),(32,3,256,256))
+    #     config.add_optimization_profile(profile)
+    #     engineString = builder.build_serialized_network(network, config)
+    #     if engineString == None:
+    #         print("Failed building engine!")
+    #         exit()
+    #     print("Succeeded building engine!")
+    #     with open(trtfile, 'wb') as f:
+    #         f.write(engineString)
+    #     engine = trt.Runtime(logger).deserialize_cuda_engine(engineString)
 
-    input_name = 'modelInput'
-    input_shape = [-1,3,256,256]
-    profile.set_shape(input_name,(1,3,256,256),(16,3,256,256),(32,3,256,256))
-    config.add_optimization_profile(profile)
-    engineString = builder.build_serialized_network(network, config)
-    if engineString == None:
-        print("Failed building engine!")
-        exit()
-    print("Succeeded building engine!")
-    with open(trtfile, 'wb') as f:
-        f.write(engineString)
-    engine = trt.Runtime(logger).deserialize_cuda_engine(engineString)
-
-#运行期
-context = engine.create_execution_context()
-context.set_binding_shape(0, [1, 3, 256, 256])
-_, stream = cudart.cudaStreamCreate()
-print("Binding0->", engine.get_binding_shape(0), context.get_binding_shape(0), engine.get_binding_dtype(0))
-print("Binding1->", engine.get_binding_shape(1), context.get_binding_shape(1), engine.get_binding_dtype(1))
-inputH0 = np.ascontiguousarray(img.cpu().numpy().reshape(-1))
-outputH0 = np.empty(context.get_binding_shape(1), dtype=trt.nptype(engine.get_binding_dtype(1)))
-_, inputD0 = cudart.cudaMallocAsync(inputH0.nbytes, stream)
-_, outputD0 = cudart.cudaMallocAsync(outputH0.nbytes, stream)
-cudart.cudaMemcpyAsync(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
-                       stream)
-context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-for i in range(20):
+    #运行期
+    context = engine.create_execution_context()
+    context.set_binding_shape(0, [1, 3, 256, 256])
+    _, stream = cudart.cudaStreamCreate()
+    print("Binding0->", engine.get_binding_shape(0), context.get_binding_shape(0), engine.get_binding_dtype(0))
+    print("Binding1->", engine.get_binding_shape(1), context.get_binding_shape(1), engine.get_binding_dtype(1))
+    inputH0 = np.ascontiguousarray(img.cpu().numpy().reshape(-1))
+    outputH0 = np.empty(context.get_binding_shape(1), dtype=trt.nptype(engine.get_binding_dtype(1)))
+    _, inputD0 = cudart.cudaMallocAsync(inputH0.nbytes, stream)
+    _, outputD0 = cudart.cudaMallocAsync(outputH0.nbytes, stream)
+    cudart.cudaMemcpyAsync(inputD0, inputH0.ctypes.data, inputH0.nbytes, cudart.cudaMemcpyKind.cudaMemcpyHostToDevice,
+                           stream)
     context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-cudart.cudaStreamSynchronize(stream)
-tic = time()
-for i in range(nRound):
-    context.execute_async_v2([int(inputD0), int(outputD0)], stream)
-cudart.cudaStreamSynchronize(stream)
-toc = time()
-trt_latency = (toc-tic)/nRound
-print(cpu_latency,gpu_latency,trt_latency)
-cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
-                       cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
+    for i in range(20):
+        context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+    cudart.cudaStreamSynchronize(stream)
+    tic = time()
+    for i in range(nRound):
+        context.execute_async_v2([int(inputD0), int(outputD0)], stream)
+    cudart.cudaStreamSynchronize(stream)
+    toc = time()
+    trt_latency = (toc-tic)/nRound
+    print(trtfile,'latency:')
+    print(cpu_latency,gpu_latency,trt_latency)
+    cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
+                           cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
-# print("outputH0:", outputH0.shape)
-# print(outputH0)
-cudart.cudaStreamSynchronize(stream)
-cudart.cudaStreamDestroy(stream)
-cudart.cudaFree(inputD0)
-cudart.cudaFree(outputD0)
+    # print("outputH0:", outputH0.shape)
+    # print(outputH0)
+    cudart.cudaStreamSynchronize(stream)
+    cudart.cudaStreamDestroy(stream)
+    cudart.cudaFree(inputD0)
+    cudart.cudaFree(outputD0)
 
-print("Succeeded running model in TensorRT!")
-t2c_l2,t2c_cos = distance(out_cpu,outputH0)
-print(t2c_l2,t2c_cos)
-
+    print("Succeeded running model in TensorRT!")
+# t2c_l2,t2c_cos = distance(out_cpu,outputH0)
+# print(t2c_l2,t2c_cos)
+#
