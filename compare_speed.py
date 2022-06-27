@@ -22,8 +22,9 @@ trt_fp16 = './mobilevit_fp16.plan'
 trt_int8 = './mobilevit_int8.plan'
 trt_fp32_silu = './mobilevit_fp32_silu.plan'
 trt_fp16_silu = './mobilevit_fp16_silu.plan'
-trt_int8_silu = './mobilevit_int8_silu.plan'
-trt_files = [trt_fp32,trt_fp16,trt_int8,trt_fp32_silu,trt_fp16_silu,trt_int8_silu]
+#trt_int8_silu = './mobilevit_int8_silu.plan'
+#trt_files = [trt_fp32,trt_fp16,trt_int8,trt_fp32_silu,trt_fp16_silu]
+trt_files = [trt_fp32,trt_fp16]
 onnxFile = './mobilevit.onnx'
 nRound = 20
 
@@ -131,8 +132,8 @@ for trtfile in trt_files:
     cudart.cudaMemcpyAsync(outputH0.ctypes.data, outputD0, outputH0.nbytes,
                            cudart.cudaMemcpyKind.cudaMemcpyDeviceToHost, stream)
 
-    # print("outputH0:", outputH0.shape)
-    # print(outputH0)
+    print("outputH0:", outputH0.shape)
+    #print(outputH0)
     cudart.cudaStreamSynchronize(stream)
     cudart.cudaStreamDestroy(stream)
     cudart.cudaFree(inputD0)
