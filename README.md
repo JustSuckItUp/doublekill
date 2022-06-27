@@ -1,8 +1,9 @@
 # doublekill
 
 ## 1 总述
-选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升93.92倍；fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升1039.15倍。INT8模式下没有通过polygraphy误差校验，FPS提升556.35倍。
-实现了SiLU的plugin，FP32，FP16加速比分别为501.79，614.86.
+选取了MobileViT模型，在TensorRT上优化运行。MobileViT模型是2021年底出现的一个用于移动设备的轻量级、通用的、低时延的端侧网络架构，原始项目链接为https://github.com/wilile26811249/MobileViT。 
+**通过代码优化并独立开发Plugin，实现了fp32、fp16以及int8模式下的优化，并获得优良的优化效果。fp32精度下，利用polygraphy对误差进行校验，并通过校验，fps提升93.92倍；fp16精度下，利用polygraphy对误差进行校验，并通过校验，fps提升1039.15倍。INT8模式下没有通过polygraphy误差校验，FPS提升556.35倍。**
+**实现了SiLU的plugin，FP32，FP16加速比分别为501.79，614.86.**
 整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
 ### 1.1 get .onnx file
 ```
