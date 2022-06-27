@@ -72,15 +72,12 @@ python3 compare_speed.py
 # relative ratio to cpu
 {'cpu_latency': 1.0, 'gpu_latency': 93.9229703841628, './mobilevit_fp32.plan': 593.6946105665452, './mobilevit_fp16.plan': 1039.1457522978965, './mobilevit_int8.plan': 556.3512160181458, './mobilevit_fp32_silu.plan': 501.78903417995616, './mobilevit_fp16_silu.plan': 614.8608454090346}
 ```
-	FPS	ratio
-CPU	20.17	1
-GPU	93.92	93.92
-FP32	593.69	593.69
-FP16	1039.15	1039.15
-INT8	556.35	556.35
-FP32_SiLU	501.79	501.79
-FP16_SiLU	614.86	614.86
-
+![image](https://user-images.githubusercontent.com/47239326/175927896-f7fbc544-974c-4136-8d1a-8e40825bada8.png)
+**图中可得出结论：**
+**1.FP32,FP16,INT8均比CPU以及torch自带gpu运行速度快，而且快特别多**
+**2.FP16速度比FP32快**
+**3.应用SiLU_plugin后速度变慢，猜测是自己生成的plugin没有官方算子快**
+**4.INT8比FP32还慢，结合上述精度部分INT8也不合格，猜测是实现过程有问题**
 
 最后，我们提交了开发过程中发现的几个有价值的TensorRT bug，并提交了完整清晰的代码和报告。
 
