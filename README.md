@@ -10,6 +10,21 @@
 
 **实现了SiLU的plugin，FP32，FP16加速比分别为24.88，30.48**
 整个开发过程在比赛提供的预装了PyTorch的NGC Docker中完成，完整的编译和运行步骤如下：
+### 1.0 environment
+```
+sudo docker pull registry.cn-hangzhou.aliyuncs.com/trt2022/trt-8.4-ga
+mkdir ~/trt2022_src
+sudo systemctl restart docker
+##如果是第一次打开docker
+sudo docker run -it --name trt2022 -v ~/trt2022_src:/target registry.cn-hangzhou.aliyuncs.com/trt2022/trt-8.4-ga
+##不是第一次打开
+sudo docker start -i trt2022
+## 安装依赖
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+##超时报错就多试几遍
+
+```
+
 ### 1.1 get .onnx file
 ```
 conda activate trt
