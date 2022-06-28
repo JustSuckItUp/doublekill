@@ -22,6 +22,7 @@ sudo docker start -i trt2022
 ## 安装依赖
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 ##超时报错就多试几遍
+pip install einops
 git clone git@github.com:JustSuckItUp/doublekill.git
 ```
 
